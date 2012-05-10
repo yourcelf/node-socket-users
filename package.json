@@ -1,0 +1,23 @@
+{
+    "name": "socket-users",
+    "version": "0.0.0",
+    "scripts": {
+        "test": "mocha --compilers coffee:coffee-script spec/*"
+    },
+    "dependencies": {
+        "coffee-script": "~1",
+        "express": "~2.5.9",
+        "mongoose": "~2.6",
+        "connect": "~1",
+        "node-uuid": "~1",
+        "socket.io": "~0.9.6",
+        "underscore": "1",
+        "iorooms": "git+https://github.com/yourcelf/node-iorooms#master",
+        "browserid-consumer": "git+https://github.com/yourcelf/node-browserid-consumer#master"
+    },
+    "devDependencies": {
+        "mocha": "~1",
+        "zombie": "~0.13",
+        "jade": "~0"
+    }
+}

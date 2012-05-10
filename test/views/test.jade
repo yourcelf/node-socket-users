@@ -1,0 +1,90 @@
+doctype 5
+html(lang="en")
+  head
+    title User socket test
+  body
+    a.signin(href="#") Sign in
+    a.logout(href='/auth/logout') Log out
+    div#user
+    div#error
+    p
+      | Join a room:
+      input(type='text', id='room')
+      input(type='button', id='joinRoom', value='Join room')
+      input(type='button', id='leaveRoom', value='Leave room')
+
+    div#messages
+
+    p
+      | Send a message:
+      input(type='text', id='message')
+      input(type='button', id='sendMessage', value='Send message')
+
+    p
+      input(type='button', id='close', value='Close sockets')
+
+    script(src="http://code.jquery.com/jquery-1.7.2.min.js", type="text/javascript")
+    script(src="/socket.io/socket.io.js", type="text/javascript")
+    script(type="text/javascript")
+
+      var socket;
+      // Zombie needs a full URL, not relative.
+      // https://github.com/justinlatimer/zombie-socket.io-example
+      socket = io.connect(window.location.href + "iorooms");
+      socket.on("connect", function() {
+        socket.on("error", function(data) {
+          $("#error").append(data.error);
+        });
+        socket.on("message", function(data) {
+          $("#messages").append("<p>" + data.message + "</p>");
+        });
+      });
+
+      $("#joinRoom").on("click", function() {
+        socket.emit("join", { room: $("#room").val() });
+      });
+      $("#leaveRoom").on("click", function() {
+        socket.emit("leave", { room: $("#room").val() });
+      });
+      $("#sendMessage").on("click", function() {
+        socket.emit("message", { message: $("#message").val(), room: $("#room").val() });
+      });
+      $("#close").on("click", function() {
+        socket.disconnect();
+      });
+      
+      // Overide the actual mozilla browserID to send a mock assertion
+      // which accords with mock-browserid on the server.
+      window.sendValidAssertion = true;
+      navigator.id = {
+        get: function(cb) {
+          if (window.sendValidAssertion) {
+            return cb('valid-assertion');
+          } else {
+            return cb('invalid-assertion');
+          }
+        }
+      };
+      
+      $(".signin").on("click", function() {
+        navigator.id.get(function(assertion) {
+          if (assertion) {
+            $.ajax({
+              url: "/auth/verify",
+              type: "POST",
+              data: {assertion: assertion},
+              dataType: 'json',
+              success: function(data) {
+                window.user = data;
+                $("#user").html(JSON.stringify(data));
+              },
+              error: function(data) {
+                // tell the user something went wrong.
+              }
+            });
+          } else {
+            // Signin was cancelled.
+          }
+        });
+        return false;
+      });
